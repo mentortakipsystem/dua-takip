@@ -1,0 +1,443 @@
+<title>Dua Takip</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Dark-first: Islamic prayer tracker — deep navy ground, gold accent */
+  :root {
+    --bg: #0b1120;
+    --bg-card: #131d33;
+    --fg: #d4dae6;
+    --fg-muted: #7b8ba5;
+    --accent: #c9a84c;
+    --accent-dim: rgba(201, 168, 76, 0.15);
+    --progress: #3d8c5c;
+    --progress-bg: #1a2a3a;
+    --border: rgba(201, 168, 76, 0.12);
+    --font-display: 'Amiri', 'Times New Roman', serif;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 1.5rem 0 0.75rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .header-date {
+    font-size: 0.8rem;
+    color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Progress */
+  .progress-section {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border);
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .progress-label strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .progress-label span {
+    color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .progress-bar {
+    height: 8px;
+    background: var(--progress-bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--progress), var(--accent));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    min-width: 0;
+  }
+
+  /* Section */
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--fg);
+    margin: 1.25rem 0 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 1.1em;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* Dua items */
+  .dua-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dua-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .dua-item:active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+  }
+
+  .dua-item.completed {
+    opacity: 0.5;
+  }
+
+  .dua-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .dua-name {
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .dua-target {
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dua-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .counter-value {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 2.5ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .counter-target {
+    font-size: 0.8rem;
+    color: var(--fg-muted);
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-card);
+    color: var(--fg-muted);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-align: center;
+  }
+
+  .btn:active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .btn-primary:active {
+    opacity: 0.85;
+  }
+
+  /* Tab bar */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0.25rem;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 0.6rem;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--fg-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: var(--font-body);
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 1rem 0 1.5rem;
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    opacity: 0.6;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+
+<div class="header">
+  <h1>بِسْمِ ٱللَّٰهِ</h1>
+  <span class="header-date" id="today-date"></span>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <strong>Günlük İlerleme</strong>
+    <span id="progress-text">0 / 0</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="sabah">Sabah</button>
+  <button class="tab" data-tab="aksam">Akşam</button>
+</div>
+
+<div id="tab-sabah" class="tab-content active">
+  <div class="section-title">Sabah Duaları</div>
+  <div class="dua-list" id="sabah-list"></div>
+</div>
+
+<div id="tab-aksam" class="tab-content">
+  <div class="section-title">Akşam Duaları</div>
+  <div class="dua-list" id="aksam-list"></div>
+</div>
+
+<div class="controls">
+  <button class="btn" id="btn-reset">Sıfırla</button>
+</div>
+
+<div class="footer">Dua Takip v1</div>
+
+<script>
+  const DUAS = {
+    sabah: [
+      { name: "Sübhanallah", target: 33 },
+      { name: "Elhamdülillah", target: 33 },
+      { name: "Allahu Ekber", target: 33 },
+      { name: "Lâ ilâhe illallah", target: 1 },
+      { name: "Ayetül Kürsî", target: 1 },
+      { name: "Sabah Duası", target: 1 }
+    ],
+    aksam: [
+      { name: "Sübhanallah", target: 33 },
+      { name: "Elhamdülillah", target: 33 },
+      { name: "Allahu Ekber", target: 33 },
+      { name: "Lâ ilâhe illallah", target: 1 },
+      { name: "Ayetül Kürsî", target: 1 },
+      { name: "Akşam Duası", target: 1 }
+    ]
+  };
+
+  function todayKey() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem('dua-takip');
+      if (raw) {
+        const state = JSON.parse(raw);
+        if (state.date === todayKey()) return state;
+      }
+    } catch {}
+    return freshState();
+  }
+
+  function freshState() {
+    const counts = {};
+    for (const [section, list] of Object.entries(DUAS)) {
+      counts[section] = list.map(() => 0);
+    }
+    return { date: todayKey(), counts };
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem('dua-takip', JSON.stringify(state));
+    } catch {}
+  }
+
+  let state = loadState();
+
+  function renderDate() {
+    const d = new Date();
+    const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
+                     'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+    document.getElementById('today-date').textContent =
+      d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  function renderList(section) {
+    const container = document.getElementById(section + '-list');
+    container.innerHTML = '';
+    DUAS[section].forEach((dua, i) => {
+      const count = state.counts[section][i];
+      const done = count >= dua.target;
+      const el = document.createElement('div');
+      el.className = 'dua-item' + (done ? ' completed' : '');
+      el.innerHTML =
+        '<div class="dua-info">' +
+          '<span class="dua-name">' + dua.name + '</span>' +
+          '<span class="dua-target">Hedef: ' + dua.target + '</span>' +
+        '</div>' +
+        '<div class="dua-counter">' +
+          '<span class="counter-value">' + count + '</span>' +
+          '<span class="counter-target">/ ' + dua.target + '</span>' +
+        '</div>';
+      el.addEventListener('click', function() {
+        if (count < dua.target) {
+          state.counts[section][i]++;
+          saveState(state);
+          render();
+        }
+      });
+      container.appendChild(el);
+    });
+  }
+
+  function renderProgress() {
+    let done = 0, total = 0;
+    for (const [section, list] of Object.entries(DUAS)) {
+      list.forEach((dua, i) => {
+        total += dua.target;
+        done += Math.min(state.counts[section][i], dua.target);
+      });
+    }
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    document.getElementById('progress-text').textContent = done + ' / ' + total;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  function render() {
+    renderList('sabah');
+    renderList('aksam');
+    renderProgress();
+  }
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Reset
+  document.getElementById('btn-reset').addEventListener('click', function() {
+    state = freshState();
+    saveState(state);
+    render();
+  });
+
+  renderDate();
+  render();
+</script>
